@@ -3,7 +3,27 @@
  * Etapa 1: lógica local con localStorage
  * En Etapa 2 este archivo se adaptará para usar Supabase.
  */
+// Conexion de supa base con js 
+const SUPABASE_URL = 'https://dyihctgcpimueefzkprw.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_v6iM30ry7gBneox9Eukt0Q_u5pP1dU2'; // Tu clave completa aquí
 
+const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// Ejemplo para obtener tareas de la base de datos
+async function obtenerTareas() {
+  const { data, error } = await supabase.from('tasks').select('*');
+  if (error) console.error('Error:', error);
+  else console.log('Tareas:', data);
+}
+
+// Ejemplo para guardar una tarea
+async function crearTarea(title, description, priority, deadline) {
+  const { data, error } = await supabase
+    .from('tasks')
+    .insert([{ title, description, priority, deadline, completed: false }]);
+  if (error) console.error('Error al insertar:', error);
+  else obtenerTareas(); // Recargar la lista
+}
 // ==========================================
 // ESTADO
 // ==========================================
