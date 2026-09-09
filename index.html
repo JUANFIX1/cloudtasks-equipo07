@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CloudTasks</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="logo">
+        <span class="logo-mark">CT</span>
+        <span class="logo-name">CloudTasks</span>
+      </div>
+      <div class="header-stats">
+        <span id="stat-total">0 tareas</span>
+        <span class="stat-sep">·</span>
+        <span id="stat-pending" class="stat-pending">0 pendientes</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN -->
+  <main class="main-layout">
+
+    <!-- PANEL IZQUIERDO: formulario -->
+    <aside class="panel-form">
+      <h2 class="panel-title">Nueva tarea</h2>
+
+      <div class="field">
+        <label for="task-title">Título <span class="required">*</span></label>
+        <input id="task-title" type="text" placeholder="¿Qué hay que hacer?" maxlength="80" />
+        <span class="field-error" id="err-title"></span>
+      </div>
+
+      <div class="field">
+        <label for="task-desc">Descripción</label>
+        <textarea id="task-desc" placeholder="Detalles opcionales..." rows="3" maxlength="300"></textarea>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label for="task-priority">Prioridad</label>
+          <select id="task-priority">
+            <option value="low">Baja</option>
+            <option value="medium" selected>Media</option>
+            <option value="high">Alta</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="task-deadline">Fecha límite</label>
+          <input id="task-deadline" type="date" />
+        </div>
+      </div>
+
+      <button id="btn-add" class="btn-primary">Agregar tarea</button>
+
+      <!-- Filtros -->
+      <div class="filter-section">
+        <p class="filter-label">Filtrar por</p>
+        <div class="filter-group">
+          <button class="filter-btn active" data-filter="all">Todas</button>
+          <button class="filter-btn" data-filter="pending">Pendientes</button>
+          <button class="filter-btn" data-filter="completed">Completadas</button>
+        </div>
+        <div class="filter-group">
+          <button class="filter-btn" data-priority="all">Todas</button>
+          <button class="filter-btn" data-priority="high">Alta</button>
+          <button class="filter-btn" data-priority="medium">Media</button>
+          <button class="filter-btn" data-priority="low">Baja</button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- PANEL DERECHO: lista de tareas -->
+    <section class="panel-list">
+      <div id="empty-state" class="empty-state">
+        <div class="empty-icon">✦</div>
+        <p>No hay tareas todavía.<br>Crea la primera usando el formulario.</p>
+      </div>
+      <ul id="task-list" class="task-list" aria-label="Lista de tareas"></ul>
+    </section>
+
+  </main>
+
+  <!-- TOAST -->
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
