@@ -6,86 +6,121 @@
   <title>CloudTasks</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;1,500;1,600&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body>
 
-  <!-- HEADER -->
-  <header class="site-header">
-    <div class="header-inner">
-      <div class="logo">
-        <span class="logo-mark">CT</span>
-        <span class="logo-name">CloudTasks</span>
-      </div>
-      <div class="header-stats">
-        <span id="stat-total">0 tareas</span>
-        <span class="stat-sep">·</span>
-        <span id="stat-pending" class="stat-pending">0 pendientes</span>
-      </div>
-    </div>
-  </header>
+  <!-- FONDO -->
+  <div class="bg-orbs" aria-hidden="true">
+    <div class="bg-grid"></div>
+    <span class="orb"></span>
+    <div class="vignette"></div>
+  </div>
 
-  <!-- MAIN -->
-  <main class="main-layout">
+  <main class="layout">
 
-    <!-- PANEL IZQUIERDO: formulario -->
-    <aside class="panel-form">
-      <h2 class="panel-title">Nueva tarea</h2>
+    <!-- PANEL IZQUIERDO: agenda -->
+    <aside class="agenda">
+      <p class="eyebrow">CloudTasks</p>
 
-      <div class="field">
-        <label for="task-title">Título <span class="required">*</span></label>
-        <input id="task-title" type="text" placeholder="¿Qué hay que hacer?" maxlength="80" />
-        <span class="field-error" id="err-title"></span>
-      </div>
-
-      <div class="field">
-        <label for="task-desc">Descripción</label>
-        <textarea id="task-desc" placeholder="Detalles opcionales..." rows="3" maxlength="300"></textarea>
-      </div>
-
-      <div class="field-row">
-        <div class="field">
-          <label for="task-priority">Prioridad</label>
-          <select id="task-priority">
-            <option value="low">Baja</option>
-            <option value="medium" selected>Media</option>
-            <option value="high">Alta</option>
-          </select>
-        </div>
-
-        <div class="field">
-          <label for="task-deadline">Fecha límite</label>
-          <input id="task-deadline" type="date" />
+      <div class="date-hero">
+        <span class="date-num" id="date-num">09</span>
+        <div class="date-words">
+          <span class="date-month" id="date-month">septiembre</span>
+          <span class="date-sub" id="date-sub">MIÉRCOLES · 2026</span>
         </div>
       </div>
 
-      <button id="btn-add" class="btn-primary">Agregar tarea</button>
+      <div class="stat-block">
+        <div class="stat-row">
+          <span class="stat-big" id="stat-pending-big">0 pendientes</span>
+          <span class="stat-pct" id="stat-pct">0%</span>
+        </div>
+        <div class="progress-line"><div id="progress-fill" class="progress-fill"></div></div>
+        <p class="stat-caption" id="stat-caption">0 DE 0 COMPLETADAS</p>
+      </div>
 
-      <!-- Filtros -->
-      <div class="filter-section">
-        <p class="filter-label">Filtrar por</p>
-        <div class="filter-group">
-          <button class="filter-btn active" data-filter="all">Todas</button>
-          <button class="filter-btn" data-filter="pending">Pendientes</button>
-          <button class="filter-btn" data-filter="completed">Completadas</button>
-        </div>
-        <div class="filter-group">
-          <button class="filter-btn" data-priority="all">Todas</button>
-          <button class="filter-btn" data-priority="high">Alta</button>
-          <button class="filter-btn" data-priority="medium">Media</button>
-          <button class="filter-btn" data-priority="low">Baja</button>
-        </div>
+      <div class="agenda-divider"></div>
+
+      <p class="section-label">Vista</p>
+      <div class="view-list" id="view-list">
+        <button class="view-item active" data-filter="all">
+          <span class="view-tick"></span>
+          <span class="view-name">Todas</span>
+          <span class="view-count" id="count-all">0</span>
+        </button>
+        <button class="view-item" data-filter="pending">
+          <span class="view-tick"></span>
+          <span class="view-name">Pendientes</span>
+          <span class="view-count" id="count-pending">0</span>
+        </button>
+        <button class="view-item" data-filter="overdue">
+          <span class="view-tick"></span>
+          <span class="view-name">Vencidas</span>
+          <span class="view-count" id="count-overdue">0</span>
+        </button>
+        <button class="view-item" data-filter="completed">
+          <span class="view-tick"></span>
+          <span class="view-name">Completadas</span>
+          <span class="view-count" id="count-completed">0</span>
+        </button>
+      </div>
+
+      <p class="section-label section-label-spaced">Prioridad</p>
+      <div class="pill-group" id="priority-filters">
+        <button class="pill pill-ghost active" data-priority="all">Todas</button>
+        <button class="pill pill-ghost" data-priority="high">Alta</button>
+        <button class="pill pill-ghost" data-priority="medium">Media</button>
+        <button class="pill pill-ghost" data-priority="low">Baja</button>
       </div>
     </aside>
 
-    <!-- PANEL DERECHO: lista de tareas -->
-    <section class="panel-list">
-      <div id="empty-state" class="empty-state">
-        <div class="empty-icon">✦</div>
-        <p>No hay tareas todavía.<br>Crea la primera usando el formulario.</p>
+    <!-- PANEL DERECHO -->
+    <section class="workspace">
+
+      <!-- COMPOSITOR -->
+      <div class="composer">
+        <p class="eyebrow eyebrow-dot" id="composer-eyebrow"><span class="dot"></span>Nueva tarea</p>
+
+        <input
+          id="task-title"
+          class="title-input"
+          type="text"
+          placeholder="Escribe la tarea y pulsa Enter"
+          maxlength="80"
+          autocomplete="off"
+        />
+        <span class="field-error" id="err-title"></span>
+
+        <input
+          id="task-desc"
+          class="note-input"
+          type="text"
+          placeholder="Nota breve (opcional)"
+          maxlength="300"
+          autocomplete="off"
+        />
+
+        <div class="composer-row">
+          <div class="pill-group" id="priority-picker">
+            <button type="button" class="pill" data-value="high">Alta</button>
+            <button type="button" class="pill active" data-value="medium">Media</button>
+            <button type="button" class="pill" data-value="low">Baja</button>
+          </div>
+
+          <input id="task-deadline" class="date-input" type="date" />
+
+          <button id="btn-add" class="btn-add">Agregar</button>
+        </div>
       </div>
-      <ul id="task-list" class="task-list" aria-label="Lista de tareas"></ul>
+
+      <!-- LISTADO -->
+      <div id="empty-state" class="empty-state">
+        <p>No hay tareas todavía.<br>Crea la primera arriba.</p>
+      </div>
+      <div id="task-list" class="task-list"></div>
+
     </section>
 
   </main>
