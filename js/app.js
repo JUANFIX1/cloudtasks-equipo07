@@ -1,56 +1,27 @@
 /**
  * CloudTasks — app.js
- * Etapa 1: lógica local con localStorage
- * En Etapa 2 este archivo se adaptará para usar Supabase.
+ * Etapa 2: Integración asíncrona con Supabase
  */
-// Conexion de supa base con js 
-const SUPABASE_URL = 'https://dyihctgcpimueefzkprw.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_v6iM30ry7gBneox9Eukt0Q_u5pP1dU2'; // Tu clave completa aquí
 
-const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-// Ejemplo para obtener tareas de la base de datos
-async function obtenerTareas() {
-  const { data, error } = await supabase.from('tasks').select('*');
-  if (error) console.error('Error:', error);
-  else console.log('Tareas:', data);
-}
-
-// Ejemplo para guardar una tarea
-async function crearTarea(title, description, priority, deadline) {
-  const { data, error } = await supabase
-    .from('tasks')
-    .insert([{ title, description, priority, deadline, completed: false }]);
-  if (error) console.error('Error al insertar:', error);
-  else obtenerTareas(); // Recargar la lista
-}
 // ==========================================
-// ESTADO
+// CONFIGURACIÓN DE SUPABASE
+// ==========================================
+const SUPABASE_URL = 'https://dyihctgcpimueefzkprw.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_v6iM30ry7gBneox9Eukt0Q_u5pP1dU2';
+
+// Usamos supabaseClient para evitar el conflicto de nombres con la librería global
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// ==========================================
+// ESTADO LOCAL Y FILTROS
 // ==========================================
 let tasks = [];
 let filterStatus   = 'all';   // 'all' | 'pending' | 'completed'
 let filterPriority = 'all';   // 'all' | 'high' | 'medium' | 'low'
 
 // ==========================================
-// PERSISTENCIA LOCAL (Etapa 1)
-// En Etapa 2 se reemplaza por llamadas a Supabase
-// ==========================================
-function loadTasks() {
-  const stored = localStorage.getItem('cloudtasks');
-  tasks = stored ? JSON.parse(stored) : [];
-}
-
-function saveTasks() {
-  localStorage.setItem('cloudtasks', JSON.stringify(tasks));
-}
-
-// ==========================================
 // UTILIDADES
 // ==========================================
-function generateId() {
-  return Date.now().toString(36) + Math.random().toString(36).slice(2);
-}
-
 function formatDate(iso) {
   if (!iso) return '';
   const [y, m, d] = iso.split('-');
@@ -70,8 +41,18 @@ function showToast(msg) {
   setTimeout(() => toast.classList.remove('show'), 2400);
 }
 
+function escapeHtml(str) {
+  if (!str) return '';
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 // ==========================================
-// VALIDACIÓN
+// VALIDACIÓN DE FORMULARIO
 // ==========================================
 function validateForm() {
   const title = document.getElementById('task-title').value.trim();
@@ -91,51 +72,95 @@ function validateForm() {
   return true;
 }
 
-// ==========================================
-// CRUD
-// ==========================================
-function addTask() {
-  if (!validateForm()) return;
-
-  const task = {
-    id:          generateId(),
-    title:       document.getElementById('task-title').value.trim(),
-    description: document.getElementById('task-desc').value.trim(),
-    priority:    document.getElementById('task-priority').value,
-    deadline:    document.getElementById('task-deadline').value,
-    completed:   false,
-    created_at:  new Date().toISOString(),
-  };
-
-  tasks.unshift(task);
-  saveTasks();
-  resetForm();
-  renderAll();
-  showToast('Tarea agregada');
-}
-
-function toggleTask(id) {
-  const task = tasks.find(t => t.id === id);
-  if (!task) return;
-  task.completed = !task.completed;
-  saveTasks();
-  renderAll();
-  showToast(task.completed ? 'Tarea completada' : 'Tarea pendiente');
-}
-
-function deleteTask(id) {
-  tasks = tasks.filter(t => t.id !== id);
-  saveTasks();
-  renderAll();
-  showToast('Tarea eliminada');
-}
-
 function resetForm() {
   document.getElementById('task-title').value    = '';
   document.getElementById('task-desc').value     = '';
   document.getElementById('task-priority').value = 'medium';
   document.getElementById('task-deadline').value = '';
   document.getElementById('err-title').textContent = '';
+}
+
+// ==========================================
+// OPERACIONES CRUD (SUPABASE)
+// ==========================================
+
+// READ: Cargar tareas desde Supabase
+async function loadTasks() {
+  const { data, error } = await supabaseClient
+    .from('tasks')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error al cargar tareas:', error);
+    showToast('Error al conectar con la base de datos');
+  } else {
+    tasks = data || [];
+    renderAll();
+  }
+}
+
+// CREATE: Insertar una nueva tarea
+async function addTask() {
+  if (!validateForm()) return;
+
+  const title       = document.getElementById('task-title').value.trim();
+  const description = document.getElementById('task-desc').value.trim();
+  const priority    = document.getElementById('task-priority').value;
+  const deadlineVal = document.getElementById('task-deadline').value;
+
+  const newTask = {
+    title: title,
+    description: description || null,
+    priority: priority,
+    deadline: deadlineVal || null,
+    completed: false
+  };
+
+  const { error } = await supabaseClient
+    .from('tasks')
+    .insert([newTask]);
+
+  if (error) {
+    console.error('Error al insertar tarea:', error);
+    showToast('Error al guardar la tarea');
+  } else {
+    resetForm();
+    await loadTasks();
+    showToast('Tarea agregada');
+  }
+}
+
+// UPDATE: Cambiar estado completado/pendiente
+async function toggleTask(id, currentCompleted) {
+  const { error } = await supabaseClient
+    .from('tasks')
+    .update({ completed: !currentCompleted })
+    .eq('id', id);
+
+  if (error) {
+    console.error('Error al actualizar tarea:', error);
+    showToast('Error al actualizar');
+  } else {
+    await loadTasks();
+    showToast(!currentCompleted ? 'Tarea completada' : 'Tarea pendiente');
+  }
+}
+
+// DELETE: Eliminar tarea de Supabase
+async function deleteTask(id) {
+  const { error } = await supabaseClient
+    .from('tasks')
+    .delete()
+    .eq('id', id);
+
+  if (error) {
+    console.error('Error al eliminar tarea:', error);
+    showToast('Error al eliminar');
+  } else {
+    await loadTasks();
+    showToast('Tarea eliminada');
+  }
 }
 
 // ==========================================
@@ -156,7 +181,7 @@ function getFilteredTasks() {
 }
 
 // ==========================================
-// RENDER
+// RENDERIZADO DE INTERFAZ
 // ==========================================
 function renderAll() {
   renderStats();
@@ -174,9 +199,9 @@ function renderStats() {
 }
 
 function renderList() {
-  const list      = document.getElementById('task-list');
-  const emptyEl   = document.getElementById('empty-state');
-  const filtered  = getFilteredTasks();
+  const list     = document.getElementById('task-list');
+  const emptyEl  = document.getElementById('empty-state');
+  const filtered = getFilteredTasks();
 
   list.innerHTML = '';
 
@@ -199,7 +224,9 @@ function renderList() {
     const deadlineText = task.deadline
       ? `Límite: ${formatDate(task.deadline)}`
       : '';
-    const createdText = `Creada ${formatDate(task.created_at.split('T')[0])}`;
+    
+    const createdDate = task.created_at ? task.created_at.split('T')[0] : '';
+    const createdText = createdDate ? `Creada ${formatDate(createdDate)}` : '';
 
     const priorityLabel = { high: 'Alta', medium: 'Media', low: 'Baja' };
 
@@ -214,9 +241,9 @@ function renderList() {
         <p class="task-title">${escapeHtml(task.title)}</p>
         ${task.description ? `<p class="task-desc">${escapeHtml(task.description)}</p>` : ''}
         <div class="task-meta">
-          <span class="badge badge-${task.priority}">${priorityLabel[task.priority]}</span>
+          <span class="badge badge-${task.priority}">${priorityLabel[task.priority] || task.priority}</span>
           ${deadlineText ? `<span class="task-date${overdueClass}">${deadlineText}</span>` : ''}
-          <span class="task-date">${createdText}</span>
+          ${createdText ? `<span class="task-date">${createdText}</span>` : ''}
         </div>
       </div>
       <div class="task-actions">
@@ -224,28 +251,18 @@ function renderList() {
       </div>
     `;
 
-    // Eventos
-    li.querySelector('.task-check').addEventListener('change', () => toggleTask(task.id));
+    // Asignación de eventos dinámicos
+    li.querySelector('.task-check').addEventListener('change', () => toggleTask(task.id, task.completed));
     li.querySelector('.btn-delete').addEventListener('click', () => deleteTask(task.id));
 
     list.appendChild(li);
   });
 }
 
-function escapeHtml(str) {
-  return str
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-}
-
 // ==========================================
 // FILTROS — EVENT LISTENERS
 // ==========================================
 function initFilters() {
-  // Filtros de estado
   document.querySelectorAll('[data-filter]').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('[data-filter]').forEach(b => b.classList.remove('active'));
@@ -255,7 +272,6 @@ function initFilters() {
     });
   });
 
-  // Filtros de prioridad
   document.querySelectorAll('[data-priority]').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('[data-priority]').forEach(b => b.classList.remove('active'));
@@ -267,21 +283,18 @@ function initFilters() {
 }
 
 // ==========================================
-// INIT
+// INICIALIZACIÓN
 // ==========================================
 document.addEventListener('DOMContentLoaded', () => {
   loadTasks();
-  renderAll();
   initFilters();
 
   document.getElementById('btn-add').addEventListener('click', addTask);
 
-  // Permitir agregar con Enter en el campo de título
   document.getElementById('task-title').addEventListener('keydown', e => {
     if (e.key === 'Enter') addTask();
   });
 
-  // Limpiar error mientras escribe
   document.getElementById('task-title').addEventListener('input', () => {
     document.getElementById('err-title').textContent = '';
   });
