@@ -1,19 +1,14 @@
 const SUPABASE_URL = 'https://dyihctgcpimueefzkprw.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_v6iM30ry7gBneox9Eukt0Q_u5pP1dU2';
 
-// Usamos supabaseClient para evitar el conflicto de nombres con la librería global
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// ==========================================
-// ESTADO LOCAL Y FILTROS
-// ==========================================
+
 let tasks = [];
 let filterStatus   = 'all';   // 'all' | 'pending' | 'completed'
 let filterPriority = 'all';   // 'all' | 'high' | 'medium' | 'low'
 
-// ==========================================
-// UTILIDADES
-// ==========================================
+
 function formatDate(iso) {
   if (!iso) return '';
   const [y, m, d] = iso.split('-');
@@ -43,9 +38,7 @@ function escapeHtml(str) {
     .replace(/'/g, '&#39;');
 }
 
-// ==========================================
-// VALIDACIÓN DE FORMULARIO
-// ==========================================
+
 function validateForm() {
   const title = document.getElementById('task-title').value.trim();
   const errEl = document.getElementById('err-title');
@@ -72,11 +65,8 @@ function resetForm() {
   document.getElementById('err-title').textContent = '';
 }
 
-// ==========================================
 // OPERACIONES CRUD (SUPABASE)
-// ==========================================
 
-// READ: Cargar tareas desde Supabase
 async function loadTasks() {
   const { data, error } = await supabaseClient
     .from('tasks')
@@ -92,7 +82,6 @@ async function loadTasks() {
   }
 }
 
-// CREATE: Insertar una nueva tarea
 async function addTask() {
   if (!validateForm()) return;
 
@@ -123,7 +112,6 @@ async function addTask() {
   }
 }
 
-// UPDATE: Cambiar estado completado/pendiente
 async function toggleTask(id, currentCompleted) {
   const { error } = await supabaseClient
     .from('tasks')
@@ -139,7 +127,6 @@ async function toggleTask(id, currentCompleted) {
   }
 }
 
-// DELETE: Eliminar tarea de Supabase
 async function deleteTask(id) {
   const { error } = await supabaseClient
     .from('tasks')
@@ -155,9 +142,7 @@ async function deleteTask(id) {
   }
 }
 
-// ==========================================
-// FILTRADO
-// ==========================================
+
 function getFilteredTasks() {
   return tasks.filter(task => {
     const statusOk =
@@ -172,9 +157,7 @@ function getFilteredTasks() {
   });
 }
 
-// ==========================================
 // RENDERIZADO DE INTERFAZ
-// ==========================================
 function renderAll() {
   renderStats();
   renderList();
@@ -251,9 +234,7 @@ function renderList() {
   });
 }
 
-// ==========================================
 // FILTROS — EVENT LISTENERS
-// ==========================================
 function initFilters() {
   document.querySelectorAll('[data-filter]').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -274,9 +255,7 @@ function initFilters() {
   });
 }
 
-// ==========================================
 // INICIALIZACIÓN
-// ==========================================
 document.addEventListener('DOMContentLoaded', () => {
   loadTasks();
   initFilters();
