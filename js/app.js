@@ -1,11 +1,3 @@
-/**
- * CloudTasks — app.js
- * Etapa 2: Integración asíncrona con Supabase
- */
-
-// ==========================================
-// CONFIGURACIÓN DE SUPABASE
-// ==========================================
 const SUPABASE_URL = 'https://dyihctgcpimueefzkprw.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_v6iM30ry7gBneox9Eukt0Q_u5pP1dU2';
 
