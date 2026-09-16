@@ -1,8 +1,3 @@
-/* ==========================================
-   CLOUDTASKS — Design System
-   Paleta: azul medianoche + índigo eléctrico
-   + blanco roto + estado de alerta coral
-   ========================================== */
 
 :root {
   --bg:          #0f1117; 
@@ -35,7 +30,6 @@
   --transition: 180ms ease;
 }
 
-/* RESET & BASE */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 html { font-size: 16px; scroll-behavior: smooth; }
@@ -49,14 +43,11 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* SCROLLBAR */
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: var(--bg); }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
 
-/* ==========================================
-   HEADER
-   ========================================== */
+
 .site-header {
   border-bottom: 1px solid var(--border-soft);
   background: var(--bg);
@@ -113,9 +104,6 @@ body {
 .stat-sep { color: var(--text-faint); }
 .stat-pending { color: var(--priority-medium); }
 
-/* ==========================================
-   MAIN LAYOUT
-   ========================================== */
 .main-layout {
   max-width: 1100px;
   margin: 0 auto;
@@ -130,9 +118,6 @@ body {
   .main-layout { grid-template-columns: 1fr; padding: 16px; }
 }
 
-/* ==========================================
-   PANEL FORM
-   ========================================== */
 .panel-form {
   background: var(--bg-panel);
   border: 1px solid var(--border);
@@ -283,9 +268,7 @@ select {
   color: var(--indigo);
 }
 
-/* ==========================================
-   PANEL LIST
-   ========================================== */
+
 .panel-list { min-height: 300px; }
 
 .empty-state {
@@ -440,9 +423,7 @@ select {
   background: rgba(240, 96, 96, 0.1);
 }
 
-/* ==========================================
-   TOAST
-   ========================================== */
+
 .toast {
   position: fixed;
   bottom: 28px;
@@ -466,9 +447,7 @@ select {
   transform: translateX(-50%) translateY(0);
 }
 
-/* ==========================================
-   FOCUS VISIBLE (accesibilidad)
-   ========================================== */
+
 :focus-visible {
   outline: 2px solid var(--indigo);
   outline-offset: 2px;
